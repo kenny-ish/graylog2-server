@@ -87,6 +87,12 @@ describe('QueryHelper', () => {
         '"2026-10-08T07:05:06.000Z"',
       );
     });
+
+    it('formats Graylog-managed date fields using the index mapping format', () => {
+      expect(formatValueForQuery('2026-10-08T09:05:06.000+02:00', FieldTypes.DATE(), 'timestamp')).toEqual(
+        '"2026-10-08 07:05:06.000"',
+      );
+    });
   });
 
   describe('predicate', () => {

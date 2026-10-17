@@ -61,7 +61,25 @@ describe('AddToQueryHandler', () => {
     searchExecution: { executionState: SearchExecutionState.empty() },
   };
 
-  it('formats date field for ES', async () => {
+  it('formats dynamically mapped date field for ES', async () => {
+    const query = createQuery('queryId');
+    const view = createViewWithQuery(query);
+    const state = { ...mockRootState, view: { view } } as RootState;
+    const dispatch = mockDispatch(state);
+
+    await dispatch(
+      AddToQueryHandler({
+        queryId: 'queryId',
+        field: 'custom_timestamp',
+        value: '2019-01-17T11:00:09.025Z',
+        type: new FieldType('date', [], []),
+      }),
+    );
+
+    expect(updateQueryString).toHaveBeenCalledWith('queryId', 'custom_timestamp:"2019-01-17T11:00:09.025Z"');
+  });
+
+  it('formats Graylog-managed date field for its index mapping', async () => {
     const query = createQuery('queryId');
     const view = createViewWithQuery(query);
     const state = { ...mockRootState, view: { view } } as RootState;
@@ -76,7 +94,7 @@ describe('AddToQueryHandler', () => {
       }),
     );
 
-    expect(updateQueryString).toHaveBeenCalledWith('queryId', 'timestamp:"2019-01-17T11:00:09.025Z"');
+    expect(updateQueryString).toHaveBeenCalledWith('queryId', 'timestamp:"2019-01-17 11:00:09.025"');
   });
 
   it('updates query string before adding predicate', async () => {
@@ -225,7 +243,7 @@ describe('AddToQueryHandler', () => {
 
     expect(updateQueryString).toHaveBeenCalledWith(
       'anotherQueryId',
-      'foo:23 AND timestamp:"2019-01-17T11:00:09.025Z" AND took_ms:42',
+      'foo:23 AND timestamp:"2019-01-17 11:00:09.025" AND took_ms:42',
     );
   });
 

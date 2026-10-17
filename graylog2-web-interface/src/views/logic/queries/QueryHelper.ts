@@ -17,7 +17,7 @@
 import trim from 'lodash/trim';
 import moment from 'moment-timezone';
 
-import { DATE_TIME_FORMATS } from 'util/DateTime';
+import { DATE_TIME_FORMATS, type DateTimeFormats } from 'util/DateTime';
 import { MISSING_BUCKET_NAME } from 'views/Constants';
 import type FieldType from 'views/logic/fieldtypes/FieldType';
 
@@ -64,14 +64,26 @@ export const concatQueryStrings = (
   return withRemovedEmpty.map((s) => (showBracketsForChild ? `(${s})` : s)).join(` ${operator} `);
 };
 
-export const formatTimestamp = (value: string | number) => {
+const GRAYLOG_MANAGED_DATE_FIELDS = new Set([
+  'timestamp',
+  'gl2_receive_timestamp',
+  'gl2_original_timestamp',
+  'gl2_processing_timestamp',
+  'timestamp_processing',
+  'timerange_start',
+  'timerange_end',
+]);
+
+export const formatTimestamp = (value: string | number, format: DateTimeFormats = 'internalIndexer') => {
   const utc = moment(value).tz('UTC');
 
-  return `"${utc.format(DATE_TIME_FORMATS.internalIndexer)}"`;
+  return `"${utc.format(DATE_TIME_FORMATS[format])}"`;
 };
 
-export const formatValueForQuery = (value: string | number, type: FieldType) =>
-  type.type === 'date' ? formatTimestamp(value) : escape(value);
+export const formatValueForQuery = (value: string | number, type: FieldType, field?: string) =>
+  type.type === 'date'
+    ? formatTimestamp(value, GRAYLOG_MANAGED_DATE_FIELDS.has(field ?? '') ? 'complete' : 'internalIndexer')
+    : escape(value);
 
 export const predicate = (field: string, value: string | number) =>
   value === MISSING_BUCKET_NAME || value === escape(MISSING_BUCKET_NAME)

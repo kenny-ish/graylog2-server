@@ -33,7 +33,7 @@ import fieldTypeFor from 'views/logic/fieldtypes/FieldTypeFor';
 import hasMultipleValueForActions from 'views/components/visualizations/utils/hasMultipleValueForActions';
 
 const toPredicate = (field: string, value: string | number, type: FieldType) =>
-  predicate(field, formatValueForQuery(value, type));
+  predicate(field, formatValueForQuery(value, type, field));
 
 const formatNewQuery = (oldQuery: string, field: string, value: string | number, type: FieldType) =>
   addToQuery(oldQuery, toPredicate(field, value, type));
